@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Bank Sampah</title>
+    <title>Input Bank Sampah V3</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         .container { max-width: 400px; margin: 0 auto; background-color: #fff; padding: 20px 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
@@ -24,37 +24,44 @@
     <h2>⚖️ Input Timbangan<br>Bank Sampah</h2>
 
     <form id="formSampah">
-        <!-- Pilihan Bank Sampah -->
-        <label for="bankSampah">Nama Bank Sampah / Lokasi:</label>
+        <!-- Pilihan Bank Sampah SUPER LENGKAP (SUDAH DIREVISI) -->
+        <label for="bankSampah">Lokasi / Bank Sampah:</label>
         <select id="bankSampah" required>
             <option value="" disabled selected>-- Pilih Lokasi --</option>
-            <!-- Tambahin nama Bank Sampah lu di sini kalau kurang -->
-            <option value="Bank Sampah Ceria 07">Bank Sampah Ceria 07</option>
-            <option value="Bank Sampah Maju">Bank Sampah Maju</option>
-            <option value="RT 01">RT 01</option>
-            <option value="RT 02">RT 02</option>
+            <option value="Bank Sampah RW 01">Bank Sampah RW 01</option>
+            <option value="Bank Sampah RW 02">Bank Sampah RW 02</option>
+            <option value="Bank Sampah RW 03">Bank Sampah RW 03</option>
+            <option value="Bank Sampah RW 04">Bank Sampah RW 04</option>
+            <option value="Bank Sampah RW 05">Bank Sampah RW 05</option>
+            <option value="Bank Sampah RW 06">Bank Sampah RW 06</option>
+            <option value="Bank Sampah RW 07">Bank Sampah RW 07</option>
+            <option value="Bank Sampah RW 08">Bank Sampah RW 08</option>
+            <option value="Bank Sampah RW 09">Bank Sampah RW 09</option>
+            <option value="Bank Sampah RW 10">Bank Sampah RW 10</option>
+            <option value="Bank Sampah RW 11">Bank Sampah RW 11</option>
+            <option value="Bank Sampah Kelurahan">Bank Sampah Kelurahan</option>
+            <option value="TPS 3R">TPS 3R</option>
+            <option value="Lainnya">Lainnya (Sekolah/Instansi)</option>
         </select>
         <div id="lockBadge" class="lock-badge">🔒 Terkunci Khusus Penanggung Jawab</div>
 
-        <!-- Tanggal -->
         <label for="tanggal">Tanggal:</label>
         <input type="date" id="tanggal" required>
 
-        <!-- Pilihan Kelompok (BARU) -->
+        <!-- Pilihan Kelompok V3 -->
         <label for="kelompok">Kelompok Sampah:</label>
         <select id="kelompok" required>
             <option value="" disabled selected>-- Pilih Kelompok --</option>
             <option value="Organik">🌿 Organik</option>
-            <option value="Non-Organik">📦 Non-Organik</option>
+            <option value="Anorganik">📦 Anorganik</option>
+            <option value="B3">☣️ B3</option>
         </select>
 
-        <!-- Kategori Barang (Otomatis berubah) -->
         <label for="kategori">Kategori Barang:</label>
         <select id="kategori" required disabled>
             <option value="" disabled selected>-- Pilih Kelompok Dulu --</option>
         </select>
 
-        <!-- Berat -->
         <label for="berat">Berat (Kg):</label>
         <input type="text" id="berat" placeholder="Contoh: 20.6 + 17.9 + 5" required autocomplete="off">
         <div class="hint">
@@ -64,21 +71,21 @@
         </div>
 
         <button type="submit" id="btnSubmit">Kirim Data 🚀</button>
-        <div id="loading">Sedang mengirim data ke Google Sheets... ⏳</div>
+        <div id="loading">Sedang mengirim & merekap data... ⏳</div>
     </form>
 </div>
 
 <script>
-    // 1. GANTI URL INI DENGAN URL APPS SCRIPT LU YANG BARU AJA DIBIKIN DI FASE 2 !!!
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyEiY7oMJlBVq6H3WOycIR-4Y4j09avHF3BQZiOizc7o4MYhNhEOZTqyBqt_y_A23BKgQ/exec';
+    // MASUKIN URL APPS SCRIPT LU DI BAWAH INI BRO! (JANGAN HAPUS TANDA KUTIPNYA)
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwzc-_rNplmsjgM928y27DW98Fhojpt8fRXzknUvbZhvp0pg7k5Nyn67HpcQsKyWeNYjg/exec';
     
-    // Set tanggal hari ini otomatis
     document.getElementById('tanggal').valueAsDate = new Date();
 
-    // Data Dropdown Bertingkat
+    // Data Dropdown Bertingkat V3
     const dataKategori = {
-        "Organik": ["Magot", "SOD", "Kompos", "Sayuran/Buah Sisa", "Lainnya (Organik)"],
-        "Non-Organik": ["Kardus", "Botol Plastik", "Plastik Putihan", "Emberan", "Besi", "Kaleng", "Kertas Putihan", "Duplex", "Gelas Bodong", "Alumunium"]
+        "Organik": ["Kompos", "SOD", "Magot", "Biopori/Theba"],
+        "Anorganik": ["Plastik Pet", "Plastik HDPE", "Plastik PP", "Plastik Lainnya", "Kardus", "Kertas", "Majalah/Koran", "Karton", "Alumunium", "Besi", "Tembaga", "DLL"],
+        "B3": ["Accu", "Batterai", "DLL"]
     };
 
     const elmKelompok = document.getElementById('kelompok');
@@ -86,29 +93,28 @@
     const elmBank = document.getElementById('bankSampah');
     const lockBadge = document.getElementById('lockBadge');
 
-    // FITUR CANGGIH: Kunci Akses lewat URL
-    // Cara pakai: timbangan.pondokkopi.web.id/?bank=Bank Sampah Ceria 07
+    // Fitur Kunci URL
+    // CONTOH 1: timbangan.pondokkopi.web.id/?bank=Bank Sampah RW 03
+    // CONTOH 2: timbangan.pondokkopi.web.id/?bank=Bank Sampah RW 05
     const urlParams = new URLSearchParams(window.location.search);
     const bankParam = urlParams.get('bank');
 
     if (bankParam) {
-        // Cek apakah parameter URL cocok dengan pilihan yang ada
         for (let i = 0; i < elmBank.options.length; i++) {
             if (elmBank.options[i].value.toLowerCase() === bankParam.toLowerCase()) {
                 elmBank.selectedIndex = i;
-                elmBank.disabled = true; // Kunci dropdownnya!
-                lockBadge.style.display = 'block'; // Munculin peringatan terkunci
+                elmBank.disabled = true;
+                lockBadge.style.display = 'block';
                 break;
             }
         }
     }
 
-    // Logika Dropdown Bertingkat
     elmKelompok.addEventListener('change', function() {
         let pilihanKelompok = this.value;
         let pilihanBarang = dataKategori[pilihanKelompok];
         
-        elmKategori.innerHTML = '<option value="" disabled selected>-- Pilih Kategori --</option>'; // Reset
+        elmKategori.innerHTML = '<option value="" disabled selected>-- Pilih Kategori --</option>';
         
         pilihanBarang.forEach(function(barang) {
             let option = document.createElement('option');
@@ -117,10 +123,9 @@
             elmKategori.add(option);
         });
         
-        elmKategori.disabled = false; // Buka kuncian dropdown kategori
+        elmKategori.disabled = false;
     });
 
-    // Proses Kirim Data
     const form = document.getElementById('formSampah');
     const btnSubmit = document.getElementById('btnSubmit');
     const loading = document.getElementById('loading');
@@ -143,7 +148,7 @@
         }
 
         const dataKirim = {
-            bankSampah: elmBank.value, // Tetap ngambil value meski di-disable
+            bankSampah: elmBank.value, 
             tanggal: tgl,
             kelompok: elmKelompok.value,
             kategori: elmKategori.value,
@@ -160,9 +165,8 @@
             body: JSON.stringify(dataKirim)
         })
         .then(() => {
-            alert("✅ SUKSES! Data berhasil masuk ke Google Sheets!");
+            alert("✅ SUKSES! Data berhasil masuk dan direkap ke Tab Summary!");
             document.getElementById('berat').value = '';
-            // Jangan hapus dropdown Bank Sampah dan Kelompok biar cepat input barang selanjutnya
             btnSubmit.style.display = 'block';
             loading.style.display = 'none';
         })
