@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Bank Sampah</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 400px; margin: 0 auto; background-color: #fff; padding: 20px 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        label { font-weight: bold; color: #34495e; display: block; margin-bottom: 5px; margin-top: 15px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+        input:disabled, select:disabled { background-color: #e9ecef; color: #6c757d; font-weight: bold; cursor: not-allowed; }
+        .hint { font-size: 12px; color: #7f8c8d; margin-top: 5px; line-height: 1.4; }
+        .lock-badge { display: none; font-size: 12px; color: #c0392b; background: #fadbd8; padding: 5px 10px; border-radius: 5px; margin-top: 5px; font-weight: bold; text-align: center; }
+        button { width: 100%; background-color: #27ae60; color: white; padding: 15px; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; margin-top: 25px; cursor: pointer; }
+        button:active { background-color: #2ecc71; }
+        #loading { display: none; text-align: center; margin-top: 15px; font-weight: bold; color: #e67e22; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>⚖️ Input Timbangan<br>Bank Sampah</h2>
+
+    <form id="formSampah">
+        <!-- Pilihan Bank Sampah -->
+        <label for="bankSampah">Nama Bank Sampah / Lokasi:</label>
+        <select id="bankSampah" required>
+            <option value="" disabled selected>-- Pilih Lokasi --</option>
+            <!-- Tambahin nama Bank Sampah lu di sini kalau kurang -->
+            <option value="Bank Sampah Ceria 07">Bank Sampah Ceria 07</option>
+            <option value="Bank Sampah Maju">Bank Sampah Maju</option>
+            <option value="RT 01">RT 01</option>
+            <option value="RT 02">RT 02</option>
+        </select>
+        <div id="lockBadge" class="lock-badge">🔒 Terkunci Khusus Penanggung Jawab</div>
+
+        <!-- Tanggal -->
+        <label for="tanggal">Tanggal:</label>
+        <input type="date" id="tanggal" required>
+
+        <!-- Pilihan Kelompok (BARU) -->
+        <label for="kelompok">Kelompok Sampah:</label>
+        <select id="kelompok" required>
+            <option value="" disabled selected>-- Pilih Kelompok --</option>
+            <option value="Organik">🌿 Organik</option>
+            <option value="Non-Organik">📦 Non-Organik</option>
+        </select>
+
+        <!-- Kategori Barang (Otomatis berubah) -->
+        <label for="kategori">Kategori Barang:</label>
+        <select id="kategori" required disabled>
+            <option value="" disabled selected>-- Pilih Kelompok Dulu --</option>
+        </select>
+
+        <!-- Berat -->
+        <label for="berat">Berat (Kg):</label>
+        <input type="text" id="berat" placeholder="Contoh: 20.6 + 17.9 + 5" required autocomplete="off">
+        <div class="hint">
+            <b>Tips:</b><br>
+            - Koma bisa diketik pakai titik (.) atau koma (,).<br>
+            - Mau nambah banyak karung? Jangan lupa ketik tanda <b>plus (+)</b>. Contoh: 10 + 5.5
+        </div>
+
+        <button type="submit" id="btnSubmit">Kirim Data 🚀</button>
+        <div id="loading">Sedang mengirim data ke Google Sheets... ⏳</div>
+    </form>
+</div>
+
+<script>
+    // 1. GANTI URL INI DENGAN URL APPS SCRIPT LU YANG BARU AJA DIBIKIN DI FASE 2 !!!
+    const scriptURL = 'PASTE_URL_BARU_LU_DI_SINI_JANGAN_LUPA_TANDA_KUTIPNYA_TETAP_ADA';
+    
+    // Set tanggal hari ini otomatis
+    document.getElementById('tanggal').valueAsDate = new Date();
+
+    // Data Dropdown Bertingkat
+    const dataKategori = {
+        "Organik": ["Magot", "SOD", "Kompos", "Sayuran/Buah Sisa", "Lainnya (Organik)"],
+        "Non-Organik": ["Kardus", "Botol Plastik", "Plastik Putihan", "Emberan", "Besi", "Kaleng", "Kertas Putihan", "Duplex", "Gelas Bodong", "Alumunium"]
+    };
+
+    const elmKelompok = document.getElementById('kelompok');
+    const elmKategori = document.getElementById('kategori');
+    const elmBank = document.getElementById('bankSampah');
+    const lockBadge = document.getElementById('lockBadge');
+
+    // FITUR CANGGIH: Kunci Akses lewat URL
+    // Cara pakai: timbangan.pondokkopi.web.id/?bank=Bank Sampah Ceria 07
+    const urlParams = new URLSearchParams(window.location.search);
+    const bankParam = urlParams.get('bank');
+
+    if (bankParam) {
+        // Cek apakah parameter URL cocok dengan pilihan yang ada
+        for (let i = 0; i < elmBank.options.length; i++) {
+            if (elmBank.options[i].value.toLowerCase() === bankParam.toLowerCase()) {
+                elmBank.selectedIndex = i;
+                elmBank.disabled = true; // Kunci dropdownnya!
+                lockBadge.style.display = 'block'; // Munculin peringatan terkunci
+                break;
+            }
+        }
+    }
+
+    // Logika Dropdown Bertingkat
+    elmKelompok.addEventListener('change', function() {
+        let pilihanKelompok = this.value;
+        let pilihanBarang = dataKategori[pilihanKelompok];
+        
+        elmKategori.innerHTML = '<option value="" disabled selected>-- Pilih Kategori --</option>'; // Reset
+        
+        pilihanBarang.forEach(function(barang) {
+            let option = document.createElement('option');
+            option.value = barang;
+            option.text = barang;
+            elmKategori.add(option);
+        });
+        
+        elmKategori.disabled = false; // Buka kuncian dropdown kategori
+    });
+
+    // Proses Kirim Data
+    const form = document.getElementById('formSampah');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const loading = document.getElementById('loading');
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        
+        let tgl = document.getElementById('tanggal').value;
+        let inputBerat = document.getElementById('berat').value;
+
+        let totalBerat = 0;
+        try {
+            let rumus = inputBerat.replace(/,/g, '.').replace(/\s/g, '');
+            if(/[^0-9.\+]/.test(rumus) || /\.[0-9]+\./.test(rumus)) { throw new Error("Format Aneh"); }
+            totalBerat = eval(rumus);
+            if(isNaN(totalBerat)){ throw new Error("Bukan Angka"); }
+        } catch (error) {
+            alert("⚠️ WAH ADA YANG SALAH KETIK NIH!\n\nPastikan:\n1. Pakai tanda tambah (+) kalau mau jumlahin angka.\n2. Jangan ngetik titik (.) dua kali di satu angka.");
+            return;
+        }
+
+        const dataKirim = {
+            bankSampah: elmBank.value, // Tetap ngambil value meski di-disable
+            tanggal: tgl,
+            kelompok: elmKelompok.value,
+            kategori: elmKategori.value,
+            berat: totalBerat
+        };
+
+        btnSubmit.style.display = 'none';
+        loading.style.display = 'block';
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dataKirim)
+        })
+        .then(() => {
+            alert("✅ SUKSES! Data berhasil masuk ke Google Sheets!");
+            document.getElementById('berat').value = '';
+            // Jangan hapus dropdown Bank Sampah dan Kelompok biar cepat input barang selanjutnya
+            btnSubmit.style.display = 'block';
+            loading.style.display = 'none';
+        })
+        .catch(error => {
+            alert("❌ Waduh gagal kirim! Coba cek koneksi internet HP.");
+            btnSubmit.style.display = 'block';
+            loading.style.display = 'none';
+        });
+    });
+</script>
+
+</body>
+</html>
