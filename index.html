@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Bank Sampah V3</title>
+    <title>Input Bank Sampah V3.2</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         .container { max-width: 400px; margin: 0 auto; background-color: #fff; padding: 20px 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
@@ -24,7 +24,7 @@
     <h2>⚖️ Input Timbangan<br>Bank Sampah</h2>
 
     <form id="formSampah">
-        <!-- Pilihan Bank Sampah SUPER LENGKAP (SUDAH DIREVISI) -->
+        <!-- Pilihan Bank Sampah -->
         <label for="bankSampah">Lokasi / Bank Sampah:</label>
         <select id="bankSampah" required>
             <option value="" disabled selected>-- Pilih Lokasi --</option>
@@ -48,7 +48,6 @@
         <label for="tanggal">Tanggal:</label>
         <input type="date" id="tanggal" required>
 
-        <!-- Pilihan Kelompok V3 -->
         <label for="kelompok">Kelompok Sampah:</label>
         <select id="kelompok" required>
             <option value="" disabled selected>-- Pilih Kelompok --</option>
@@ -76,12 +75,12 @@
 </div>
 
 <script>
-    // MASUKIN URL APPS SCRIPT LU DI BAWAH INI BRO! (JANGAN HAPUS TANDA KUTIPNYA)
+    // ⚠️ PENTING: MASUKIN URL APPS SCRIPT LU DI BAWAH INI BRO!
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwzc-_rNplmsjgM928y27DW98Fhojpt8fRXzknUvbZhvp0pg7k5Nyn67HpcQsKyWeNYjg/exec';
     
     document.getElementById('tanggal').valueAsDate = new Date();
 
-    // Data Dropdown Bertingkat V3
+    // Data Dropdown Bertingkat
     const dataKategori = {
         "Organik": ["Kompos", "SOD", "Magot", "Biopori/Theba"],
         "Anorganik": ["Plastik Pet", "Plastik HDPE", "Plastik PP", "Plastik Lainnya", "Kardus", "Kertas", "Majalah/Koran", "Karton", "Alumunium", "Besi", "Tembaga", "DLL"],
@@ -93,15 +92,36 @@
     const elmBank = document.getElementById('bankSampah');
     const lockBadge = document.getElementById('lockBadge');
 
-    // Fitur Kunci URL
-    // CONTOH 1: timbangan.pondokkopi.web.id/?bank=Bank Sampah RW 03
-    // CONTOH 2: timbangan.pondokkopi.web.id/?bank=Bank Sampah RW 05
-    const urlParams = new URLSearchParams(window.location.search);
-    const bankParam = urlParams.get('bank');
+    // ========================================================
+    // FITUR KUNCI URL (V3.2) - ANTI GAGAL KARENA SPASI
+    // Kamus Kode Rahasia:
+    const kamusKode = {
+        "rw01": "Bank Sampah RW 01",
+        "rw02": "Bank Sampah RW 02",
+        "rw03": "Bank Sampah RW 03",
+        "rw04": "Bank Sampah RW 04",
+        "rw05": "Bank Sampah RW 05",
+        "rw06": "Bank Sampah RW 06",
+        "rw07": "Bank Sampah RW 07",
+        "rw08": "Bank Sampah RW 08",
+        "rw09": "Bank Sampah RW 09",
+        "rw10": "Bank Sampah RW 10",
+        "rw11": "Bank Sampah RW 11",
+        "kelurahan": "Bank Sampah Kelurahan",
+        "tps3r": "TPS 3R",
+        "lainnya": "Lainnya"
+    };
 
-    if (bankParam) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const kodeParam = urlParams.get('kunci'); // Sekarang kita nyari kata "?kunci="
+
+    // Kalau di URL ada "?kunci=..." dan kodenya ada di kamus kita
+    if (kodeParam && kamusKode[kodeParam.toLowerCase()]) {
+        let namaLengkap = kamusKode[kodeParam.toLowerCase()]; // Terjemahin kodenya
+
+        // Cari nama lengkap itu di dalam dropdown
         for (let i = 0; i < elmBank.options.length; i++) {
-            if (elmBank.options[i].value.toLowerCase() === bankParam.toLowerCase()) {
+            if (elmBank.options[i].value === namaLengkap) {
                 elmBank.selectedIndex = i;
                 elmBank.disabled = true;
                 lockBadge.style.display = 'block';
@@ -109,6 +129,7 @@
             }
         }
     }
+    // ========================================================
 
     elmKelompok.addEventListener('change', function() {
         let pilihanKelompok = this.value;
